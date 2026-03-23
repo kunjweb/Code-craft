@@ -12,7 +12,8 @@ import {
   Layout, 
   PanelLeft,
   ChevronRight,
-  Command
+  Command,
+  Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChatMessage } from './components/ChatMessage';
@@ -24,7 +25,17 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,6 +64,15 @@ export default function App() {
 
   const clearChat = () => {
     setMessages([]);
+  };
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
   };
 
   return (
@@ -104,6 +124,15 @@ export default function App() {
         </div>
 
         <div className="p-4 border-t border-line space-y-2">
+          {deferredPrompt && (
+            <button 
+              onClick={handleInstall}
+              className="w-full flex items-center gap-3 px-3 py-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg text-sm transition-colors font-medium"
+            >
+              <Download size={18} />
+              <span>Install App</span>
+            </button>
+          )}
           <button className="w-full flex items-center gap-3 px-3 py-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg text-sm transition-colors">
             <Settings size={18} />
             <span>Settings</span>
