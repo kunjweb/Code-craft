@@ -24,7 +24,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -77,11 +77,30 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-bg overflow-hidden font-sans">
+      {/* Sidebar Backdrop */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.aside 
         initial={false}
-        animate={{ width: isSidebarOpen ? 280 : 0, opacity: isSidebarOpen ? 1 : 0 }}
-        className="bg-white border-r border-line flex flex-col relative z-20"
+        animate={{ 
+          width: isSidebarOpen ? 280 : 0, 
+          opacity: isSidebarOpen ? 1 : 0,
+          x: isSidebarOpen ? 0 : -20
+        }}
+        className={cn(
+          "bg-white border-r border-line flex flex-col z-40 h-full transition-all duration-300 ease-in-out fixed left-0 top-0"
+        )}
       >
         <div className="p-4 flex items-center justify-between border-b border-line h-16">
           <div className="flex items-center gap-2 overflow-hidden">
